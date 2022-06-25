@@ -1,0 +1,15 @@
+C:\Users\Martin Belej\source\repos\C#\VDJ Controller\VDJ Controller\bin\Debug\VDJ Controller.exe.config
+C:\Users\Martin Belej\source\repos\C#\VDJ Controller\VDJ Controller\bin\Debug\VDJ Controller.exe
+C:\Users\Martin Belej\source\repos\C#\VDJ Controller\VDJ Controller\bin\Debug\VDJ Controller.pdb
+C:\Users\Martin Belej\source\repos\C#\VDJ Controller\VDJ Controller\obj\Debug\VDJ Controller.csproj.AssemblyReference.cache
+C:\Users\Martin Belej\source\repos\C#\VDJ Controller\VDJ Controller\obj\Debug\VDJ Controller.csproj.SuggestedBindingRedirects.cache
+C:\Users\Martin Belej\source\repos\C#\VDJ Controller\VDJ Controller\obj\Debug\VDJ_Controller.Properties.Resources.resources
+C:\Users\Martin Belej\source\repos\C#\VDJ Controller\VDJ Controller\obj\Debug\VDJ Controller.csproj.GenerateResource.cache
+C:\Users\Martin Belej\source\repos\C#\VDJ Controller\VDJ Controller\obj\Debug\VDJ Controller.csproj.CoreCompileInputs.cache
+C:\Users\Martin Belej\source\repos\C#\VDJ Controller\VDJ Controller\obj\Debug\VDJ Controller.exe
+C:\Users\Martin Belej\source\repos\C#\VDJ Controller\VDJ Controller\obj\Debug\VDJ Controller.pdb
+C:\Users\Martin Belej\source\repos\C#\VDJ Controller\VDJ Controller\bin\Debug\Guna.UI2.dll
+C:\Users\Martin Belej\source\repos\C#\VDJ Controller\VDJ Controller\obj\Debug\VDJ Controller.csproj.CopyComplete
+C:\Users\Martin Belej\source\repos\C#\VDJ Controller\VDJ Controller\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Martin Belej\source\repos\C#\VDJ Controller\VDJ Controller\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Martin Belej\source\repos\C#\VDJ Controller\VDJ Controller\obj\Debug\VDJ_Controller.MainForm.resources
