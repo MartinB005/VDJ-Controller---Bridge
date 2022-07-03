@@ -39,7 +39,29 @@ namespace VDJ_Controller
         public SerialCommunication()
         {
 
+            VirtualKeys.Init();
+
+            for(int i = 0; i < VirtualKeys.GetMaxCount(); i++)
+            {
+                Console.WriteLine(VirtualKeys.GetName());
+                Console.WriteLine(VirtualKeys.Next());
+            }
+
+            VirtualKeys.Reset();
+
             actionManager = new ActionManager();
+
+            actionManager.Add("L_PLAY", "deck left play_pause");
+            actionManager.Add("L_CUE", "deck left cue_button");
+            actionManager.Add("L_SYNC", "deck left sync");
+
+            actionManager.Add("R_PLAY", "deck right play_pause");
+            actionManager.Add("R_CUE", "deck right cue_action");
+            actionManager.Add("R_SYNC", "deck right sync");
+
+            actionManager.Add("R_EFFECT", "deck right effect_active");
+            actionManager.Add("L_EFFECT", "deck left effect_active");
+
             actionManager.Add("lvl_L up", "deck left level +1%");
             actionManager.Add("lvl_L down", "deck left level -1%");
 
@@ -55,8 +77,44 @@ namespace VDJ_Controller
             actionManager.Add("eq1_R up", "deck right eq_high +1%");
             actionManager.Add("eq1_R down", "deck right eq_high -1%");
 
+            actionManager.Add("eq2_L up", "deck left eq_mid +1%");
+            actionManager.Add("eq2_L down", "deck left eq_mid -1%");
+
+            actionManager.Add("eq2_R up", "deck right eq_mid +1%");
+            actionManager.Add("eq2_R down", "deck right eq_mid -1%");
+
+            actionManager.Add("eq3_L up", "deck left eq_low +1%");
+            actionManager.Add("eq3_L down", "deck left eq_low -1%");
+
+            actionManager.Add("eq3_R up", "deck right eq_low +1%");
+            actionManager.Add("eq3_R down", "deck right eq_low -1%");
+
+            actionManager.Add("jogwheel left F", "deck left jogwheel +0.07");
+            actionManager.Add("jogwheel left B", "deck left jogwheel -0.07");
+
+            actionManager.Add("jogwheel right F", "deck right jogwheel +0.07");
+            actionManager.Add("jogwheel right B", "deck right jogwheel -0.07");
+
+            actionManager.Add("eff_slider_L up", "deck left effect_slider 1 +1%");
+            actionManager.Add("eff_slider_L down", "deck left effect_slider 1 -1%");
+
+            actionManager.Add("eff_slider_R up", "deck right effect_slider 1 +1%");
+            actionManager.Add("eff_slider_R down", "deck right effect_slider 1 -1%");
+
+            actionManager.Add("L_PAD 1", "deck left pad 1");
+            actionManager.Add("L_PAD 2", "deck left pad 2");
+            actionManager.Add("L_PAD 3", "deck left pad 3");
+            actionManager.Add("L_PAD 4", "deck left pad 4");
+
+            actionManager.Add("R_PAD 1", "deck right pad 1");
+            actionManager.Add("R_PAD 2", "deck right pad 2");
+            actionManager.Add("R_PAD 3", "deck right pad 3");
+            actionManager.Add("R_PAD 4", "deck right pad 4");
+
+
             actionManager.Add("play_pause left", "deck left play_pause");
             actionManager.Update();
+
 
             serialPort = new SerialPort("COM4", 115200, Parity.None, 8, StopBits.One);
             serialPort.DataReceived += new SerialDataReceivedEventHandler(OnDataReceived);
@@ -94,6 +152,11 @@ namespace VDJ_Controller
                 {
                     actionManager.ExecuteSmoothAction(serialData.Header, serialData.Value / 10);
                 }
+
+                else if(serialData.Header.Contains("jogwheel"))
+                {
+                    actionManager.MoveJogwheel(serialData.Header, serialData.Value);   
+                }
                 performing = false;
             }
 
@@ -102,10 +165,7 @@ namespace VDJ_Controller
         }
 
 
-        private void MoveJogwheel(int direction)
-        {
-            PostMessage(vdjProcess.MainWindowHandle, VirtualKeys.WM_KEYDOWN, direction == 1 ? VirtualKeys.P : VirtualKeys.Q, 0);
-        }
+
 
         private async void MoveToValue(int value, int forwardKey, int backwardKey)
         {

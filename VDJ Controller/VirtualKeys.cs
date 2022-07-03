@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,24 +23,43 @@ namespace VDJ_Controller
         public const int CTRL = 0x11;
         public const int TAB = 0x09;
 
-        public static byte key = A;
+        private static int index = 0;
+        private static List<Key> keys;
 
+        public static void Init() {
+
+            using (StreamReader r = new StreamReader("keys.json"))
+            {
+                string json = r.ReadToEnd();
+                keys = JsonConvert.DeserializeObject<List<Key>>(json);
+            }
+
+        }
+
+
+        public static int GetMaxCount()
+        {
+            return keys.Count;
+        }
 
         public static byte Next()
         {
-            byte keyValue = key;
-            key++;
+            byte keyValue = keys[index].Value;
+            index++;
             return keyValue;
         }
 
-        public static char GetChar()
-        {
-            return (char)key;
-        }
+        public static string GetName() => keys[index].Name;
 
         public static void Reset()
         {
-            key = A;
+            index = 0;
+        }
+
+        public class Key
+        {
+            public string Name { get; set; }
+            public byte Value { get; set; }
         }
     }
 }

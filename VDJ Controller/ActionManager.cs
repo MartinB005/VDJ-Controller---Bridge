@@ -48,7 +48,9 @@ namespace VDJ_Controller
 
         public void ExecuteAction(string header)
         {
+            keybd_event(VirtualKeys.CTRL, 0, 0, 0);
             SendKey(actionKeys[header]);
+            keybd_event(VirtualKeys.CTRL, 0, VirtualKeys.WM_KEYUP, 0);
         }
 
         public void ExecuteSmoothAction(string header, int value)
@@ -89,6 +91,19 @@ namespace VDJ_Controller
 
         }
 
+        public void MoveJogwheel(String header, int direction)
+        {
+            bool firstSuccess = actionKeys.TryGetValue(header + " F", out byte forwardKey);
+            bool secondSuccess = actionKeys.TryGetValue(header + " B", out byte backwardKey);
+
+            if (firstSuccess && secondSuccess)
+            {
+                keybd_event(VirtualKeys.CTRL, 0, 0, 0);
+                SendKey(direction == 1 ? forwardKey : backwardKey);
+                keybd_event(VirtualKeys.CTRL, 0, VirtualKeys.WM_KEYUP, 0);
+            }
+        }
+
         public List<ThreadStart> GetAwaitingActions()
         {
             return awaitingActions;
@@ -121,7 +136,8 @@ namespace VDJ_Controller
 
             for(int i = 0; i < actionKeys.Count; i++)
             {
-                XmlNode node = GetNodeByKeyName("CTRL+" + VirtualKeys.GetChar(), nodeList);
+                string key = "CTRL+" + VirtualKeys.GetName();
+                XmlNode node = GetNodeByKeyName(key, nodeList);
                 if (node != null)
                 {
                     node.Attributes.GetNamedItem("action").Value = actions[i];
@@ -129,7 +145,7 @@ namespace VDJ_Controller
                 else
                 {
                     XmlElement element =  doc.CreateElement("map");
-                    element.SetAttribute("value", "CTRL+" + VirtualKeys.GetChar());
+                    element.SetAttribute("value", key);
                     element.SetAttribute("action", actions[i]);
                     doc.SelectSingleNode("mapper").AppendChild(element);
                 }
