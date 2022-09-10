@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace VDJ_Controller
@@ -15,9 +16,10 @@ namespace VDJ_Controller
     public partial class SerialCommunication
     {
 
-        private readonly SerialPort serialPort;
+        private SerialPort serialPort;
         private readonly Process vdjProcess;
         private ActionManager actionManager;
+        private MainForm mainForm;
 
         private int currentVolume = 1000;
         private int crossfaderValue = 500;
@@ -36,20 +38,20 @@ namespace VDJ_Controller
 
 
         
-        public SerialCommunication()
+        public SerialCommunication(MainForm form)
         {
 
+            mainForm = form;
+
             VirtualKeys.Init();
-
-            for(int i = 0; i < VirtualKeys.GetMaxCount(); i++)
-            {
-                Console.WriteLine(VirtualKeys.GetName());
-                Console.WriteLine(VirtualKeys.Next());
-            }
-
             VirtualKeys.Reset();
 
-            actionManager = new ActionManager();
+            InitActions();
+        }
+
+        private async void InitActions()
+        {
+            actionManager = new ActionManager(mainForm);
 
             actionManager.Add("L_PLAY", "deck left play_pause");
             actionManager.Add("L_CUE", "deck left cue_button");
@@ -113,15 +115,33 @@ namespace VDJ_Controller
 
 
             actionManager.Add("play_pause left", "deck left play_pause");
+
+            await Task.Delay(500);
             actionManager.Update();
+        }
 
-
-            serialPort = new SerialPort("COM4", 115200, Parity.None, 8, StopBits.One);
-            serialPort.DataReceived += new SerialDataReceivedEventHandler(OnDataReceived);
-            serialPort.Open();
+        public void ConnectArduino(string port)
+        {
+            try
+            {
+                serialPort = new SerialPort(port, 115200, Parity.None, 8, StopBits.One);
+                serialPort.DataReceived += new SerialDataReceivedEventHandler(OnDataReceived);
+                serialPort.Open();
+            } catch (Exception ex)
+            {
+                mainForm.StatusText = String.Format("Unable to connect via {0} port", port);
+                Console.WriteLine(ex.Message);
+            }
 
             limiter = Stopwatch.StartNew();
+        }
 
+        public void DisconnectArduino()
+        {
+            if(serialPort != null)
+            {
+                serialPort.Close();
+            }
         }
 
         internal ActionManager GetActionManager()
@@ -131,37 +151,49 @@ namespace VDJ_Controller
 
         private void OnDataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            
-                string incomingData = serialPort.ReadLine();
-            
-            if (!performing && limiter.ElapsedMilliseconds > 5)
+            if (serialPort.IsOpen)
             {
-                Console.WriteLine("start");
-                limiter = Stopwatch.StartNew();
+                string incomingData = serialPort.ReadLine();
 
-                Console.WriteLine(incomingData);
-                SerialData serialData = JsonConvert.DeserializeObject<SerialData>(incomingData);
-                // keybd_event(VirtualKeys.CTRL, 0, 0, 0);
-
-                if (actionManager.ActionExist(serialData.Header))
+                if (!performing && limiter.ElapsedMilliseconds > 5 && mainForm.BridgeActive)
                 {
-                    actionManager.ExecuteAction(serialData.Header);
+                    limiter = Stopwatch.StartNew();
+
+                    Console.WriteLine(incomingData);
+
+                    SerialData serialData = null;
+
+                    try
+                    {
+                        serialData = JsonConvert.DeserializeObject<SerialData>(incomingData);
+
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+
+                    if (serialData != null)
+                    {
+                        if (actionManager.ActionExist(serialData.Header))
+                        {
+                            actionManager.ExecuteAction(serialData.Header);
+                        }
+
+                        else if (actionManager.SmoothActionExist(serialData.Header))
+                        {
+                            actionManager.ExecuteSmoothAction(serialData.Header, serialData.Value / 10);
+                        }
+
+                        else if (serialData.Header.Contains("jogwheel"))
+                        {
+                            actionManager.MoveJogwheel(serialData.Header, serialData.Value);
+                        }
+                        performing = false;
+                    }
                 }
 
-                else if (actionManager.SmoothActionExist(serialData.Header))
-                {
-                    actionManager.ExecuteSmoothAction(serialData.Header, serialData.Value / 10);
-                }
-
-                else if(serialData.Header.Contains("jogwheel"))
-                {
-                    actionManager.MoveJogwheel(serialData.Header, serialData.Value);   
-                }
-                performing = false;
             }
-
-            //keybd_event(VirtualKeys.CTRL, 0, VirtualKeys.WM_KEYUP, 0);
-
         }
 
 

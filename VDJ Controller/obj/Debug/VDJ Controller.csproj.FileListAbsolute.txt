@@ -13,3 +13,4 @@ C:\Users\Martin Belej\source\repos\C#\VDJ Controller\VDJ Controller\obj\Debug\VD
 C:\Users\Martin Belej\source\repos\C#\VDJ Controller\VDJ Controller\bin\Debug\Newtonsoft.Json.dll
 C:\Users\Martin Belej\source\repos\C#\VDJ Controller\VDJ Controller\bin\Debug\Newtonsoft.Json.xml
 C:\Users\Martin Belej\source\repos\C#\VDJ Controller\VDJ Controller\obj\Debug\VDJ_Controller.MainForm.resources
+C:\Users\Martin Belej\source\repos\C#\VDJ Controller\VDJ Controller\bin\Debug\Guna.UI.dll

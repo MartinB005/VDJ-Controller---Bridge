@@ -23,21 +23,28 @@ namespace VDJ_Controller
         [DllImport("user32.dll")]
         static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, uint dwExtraInfo);
 
-        private static bool ctrlPressed;
-
         private readonly Dictionary<string, byte> actionKeys = new Dictionary<string, byte>();
         private readonly Dictionary<string, int> lastValues = new Dictionary<string, int>();
 
         private List<string> actions = new List<string>();
         private Process vdjProcess;
 
-        private List<ThreadStart> awaitingActions = new List<ThreadStart>();
+        private MainForm mainForm;
 
+        public ActionManager(MainForm form)
+        {
+            mainForm = form;
 
-        public ActionManager()
+            FindVDJProcess();
+        }
+
+        private void FindVDJProcess()
         {
             Process[] processes = Process.GetProcessesByName("virtualdj");
-            vdjProcess = processes[0];
+            if (processes.Length > 0)
+            {
+                vdjProcess = processes[0];
+            }
         }
 
         public void Add(string header, string vdjScript)
@@ -48,12 +55,14 @@ namespace VDJ_Controller
 
         public void ExecuteAction(string header)
         {
+            mainForm.ControlActive = true;
             keybd_event(VirtualKeys.CTRL, 0, 0, 0);
             SendKey(actionKeys[header]);
             keybd_event(VirtualKeys.CTRL, 0, VirtualKeys.WM_KEYUP, 0);
+            mainForm.ControlActive = false;
         }
 
-        public void ExecuteSmoothAction(string header, int value)
+        public async void ExecuteSmoothAction(string header, int value)
         {
             bool exist = lastValues.TryGetValue(header, out int lastValue);
             if (!exist) lastValue = 100;
@@ -61,9 +70,13 @@ namespace VDJ_Controller
             bool firstSuccess = actionKeys.TryGetValue(header + " up", out byte up);
             bool secondSuccess = actionKeys.TryGetValue(header + " down", out byte down);
 
+            while(mainForm.ControlActive)
+            {
+                await Task.Delay(1);
+            }
+            mainForm.ControlActive = true;
             if (firstSuccess && secondSuccess)
             {
-                ctrlPressed = true;
                 Console.WriteLine("ctrl");
 
                 keybd_event(VirtualKeys.CTRL, 0, 0, 0);
@@ -84,11 +97,9 @@ namespace VDJ_Controller
                 if (!exist) lastValues.Add(header, value);
                 else lastValues[header] = value;
                 
-
-
-                
             }
 
+            mainForm.ControlActive = false;
         }
 
         public void MoveJogwheel(String header, int direction)
@@ -98,15 +109,12 @@ namespace VDJ_Controller
 
             if (firstSuccess && secondSuccess)
             {
+                mainForm.ControlActive = true;
                 keybd_event(VirtualKeys.CTRL, 0, 0, 0);
                 SendKey(direction == 1 ? forwardKey : backwardKey);
                 keybd_event(VirtualKeys.CTRL, 0, VirtualKeys.WM_KEYUP, 0);
+                mainForm.ControlActive = false;
             }
-        }
-
-        public List<ThreadStart> GetAwaitingActions()
-        {
-            return awaitingActions;
         }
 
         public bool ActionExist(string header)
@@ -124,7 +132,7 @@ namespace VDJ_Controller
             PostMessage(vdjProcess.MainWindowHandle, VirtualKeys.WM_KEYDOWN, key, 0);
         }
 
-        public void Update()
+        public async void Update()
         {
             XmlDocument doc = new XmlDocument();
             doc.Load(@"C:\Users\Martin Belej\Documents\VirtualDJ\Mappers\KEYBOARD - Custom Mapping.xml");
@@ -154,10 +162,22 @@ namespace VDJ_Controller
 
             doc.Save(@"C:\Users\Martin Belej\Documents\VirtualDJ\Mappers\KEYBOARD - Custom Mapping.xml");
 
-            if(!doc.InnerXml.Equals(previousContent))
+            mainForm.StatusText = "Initialization Successful";
+            await Task.Delay(500);
+
+            if (!doc.InnerXml.Equals(previousContent))
             {
                 RestartVirtualDJ();
+            } else
+            {
+                await Task.Delay(500);
+                StartVirtualDJ();
             }
+
+            await Task.Delay(1000);
+            mainForm.StatusText = "Bridge is ready";
+
+            mainForm.BridgeActive = true;
         }
 
         public int GetKey(string header)
@@ -177,11 +197,30 @@ namespace VDJ_Controller
             return null;
         }
 
+        private void StartVirtualDJ()
+        {
+            if (vdjProcess == null)
+            {
+                mainForm.StatusText = "Starting Virtual DJ...";
+                string path = @"C:\Program Files\VirtualDJ\virtualdj.exe";
+                Process.Start(path);
+                FindVDJProcess();
+            }
+        }
+
         private void RestartVirtualDJ()
         {
             string path = @"C:\Program Files\VirtualDJ\virtualdj.exe";
-            vdjProcess.Kill();
-            Process.Start(path);
+            if (vdjProcess != null)
+            {
+                mainForm.StatusText = "Retarting Virtual DJ...";
+                vdjProcess.Kill();
+                Process.Start(path);
+            }
+            else
+            {
+                mainForm.StatusText = "Virtual DJ is not opened";
+            }
         }
     }
 }
