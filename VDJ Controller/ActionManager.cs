@@ -135,7 +135,7 @@ namespace VDJ_Controller
         public async void Update()
         {
             XmlDocument doc = new XmlDocument();
-            doc.Load(@"C:\Users\Martin Belej\Documents\VirtualDJ\Mappers\KEYBOARD - Custom Mapping.xml");
+            doc.Load(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\VirtualDJ\Mappers\KEYBOARD - Custom Mapping.xml");
             string previousContent = doc.InnerXml;
 
             XmlNodeList nodeList = doc.DocumentElement.SelectNodes("/mapper/map");
@@ -160,7 +160,7 @@ namespace VDJ_Controller
                 VirtualKeys.Next();
             }
 
-            doc.Save(@"C:\Users\Martin Belej\Documents\VirtualDJ\Mappers\KEYBOARD - Custom Mapping.xml");
+            doc.Save(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"\VirtualDJ\Mappers\KEYBOARD - Custom Mapping.xml");
 
             mainForm.StatusText = "Initialization Successful";
             await Task.Delay(500);
