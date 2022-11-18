@@ -60,6 +60,7 @@ namespace VDJ_Controller
             SendKey(actionKeys[header]);
             keybd_event(VirtualKeys.CTRL, 0, VirtualKeys.WM_KEYUP, 0);
             mainForm.ControlActive = false;
+            PostMessage(vdjProcess.MainWindowHandle, VirtualKeys.WM_KEYDOWN, VirtualKeys.ESC, 0);
         }
 
         public async void ExecuteSmoothAction(string header, int value)
@@ -114,6 +115,7 @@ namespace VDJ_Controller
                 SendKey(direction == 1 ? forwardKey : backwardKey);
                 keybd_event(VirtualKeys.CTRL, 0, VirtualKeys.WM_KEYUP, 0);
                 mainForm.ControlActive = false;
+                PostMessage(vdjProcess.MainWindowHandle, VirtualKeys.WM_KEYDOWN, VirtualKeys.ESC, 0);
             }
         }
 
@@ -183,6 +185,11 @@ namespace VDJ_Controller
         public int GetKey(string header)
         {
             return actionKeys[header];
+        }
+
+        public Process GetVDJProc()
+        {
+            return vdjProcess;
         }
 
         private XmlNode GetNodeByKeyName(string keyName, XmlNodeList nodeList)

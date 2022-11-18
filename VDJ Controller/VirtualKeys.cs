@@ -22,6 +22,7 @@ namespace VDJ_Controller
         public const int Q = 0x51;
         public const int CTRL = 0x11;
         public const int TAB = 0x09;
+        public const int ESC = 0x1B;
 
         private static int index = 0;
         private static List<Key> keys;

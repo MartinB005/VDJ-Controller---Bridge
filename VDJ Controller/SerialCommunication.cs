@@ -55,11 +55,11 @@ namespace VDJ_Controller
 
             actionManager.Add("L_PLAY", "deck left play_pause");
             actionManager.Add("L_CUE", "deck left cue_button");
-            actionManager.Add("L_SYNC", "deck left sync");
+            actionManager.Add("L_SYNC", "deck left param_equal `get_pitch` 0% ? sync : pitch_reset");
 
             actionManager.Add("R_PLAY", "deck right play_pause");
             actionManager.Add("R_CUE", "deck right cue_action");
-            actionManager.Add("R_SYNC", "deck right sync");
+            actionManager.Add("R_SYNC", "deck right param_equal `get_pitch` 0% ? sync : pitch_reset");
 
             actionManager.Add("R_EFFECT", "deck right effect_active");
             actionManager.Add("L_EFFECT", "deck left effect_active");
@@ -99,9 +99,16 @@ namespace VDJ_Controller
 
             actionManager.Add("eff_slider_L up", "deck left effect_slider 1 +1%");
             actionManager.Add("eff_slider_L down", "deck left effect_slider 1 -1%");
+            actionManager.Add("eff_select_L up", "cycle \"eff_select_L\" 100  & get_var \"eff_select_L\" & param_cast \"int\" & param_multiply 0.01 & deck left effect_select_multi 1");
+            actionManager.Add("eff_select_L down", "cycle \"eff_select_L\" -100  & get_var \"eff_select_L\" & param_cast \"int\" & param_multiply 0.01 & deck left effect_select_multi 1");
 
             actionManager.Add("eff_slider_R up", "deck right effect_slider 1 +1%");
             actionManager.Add("eff_slider_R down", "deck right effect_slider 1 -1%");
+            actionManager.Add("eff_select_R up", "cycle \"eff_select_R\" 100  & get_var \"eff_select_R\" & param_cast \"int\" & param_multiply 0.01 & deck right effect_select_multi 1");
+            actionManager.Add("eff_select_R down", "cycle \"eff_select_R\" -100  & get_var \"eff_select_R\" & param_cast \"int\" & param_multiply 0.01 & deck right effect_select_multi 1");
+
+            actionManager.Add("selection_L", "deck left effect select");
+            actionManager.Add("selection_R", "deck right effect select");
 
             actionManager.Add("L_PAD 1", "deck left pad 1");
             actionManager.Add("L_PAD 2", "deck left pad 2");
@@ -188,6 +195,10 @@ namespace VDJ_Controller
                         else if (serialData.Header.Contains("jogwheel"))
                         {
                             actionManager.MoveJogwheel(serialData.Header, serialData.Value);
+
+                        } else if(serialData.Header.Equals("ESC"))
+                        {
+                            PostMessage(actionManager.GetVDJProc().Handle, VirtualKeys.WM_KEYDOWN, VirtualKeys.ESC, 0);
                         }
                         performing = false;
                     }
